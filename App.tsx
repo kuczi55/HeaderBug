@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import React, {createContext, useCallback, useEffect, useState} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -15,13 +9,11 @@ import {
   Button,
 } from 'react-native';
 import {
-  CommonActions,
   DarkTheme,
   DefaultTheme,
   NavigationContainer,
   NavigationContainerRef,
   ParamListBase,
-  StackActions,
 } from '@react-navigation/native';
 import {
   NativeStackNavigationProp,
@@ -34,45 +26,29 @@ interface ScreenProps {
   navigation: NativeStackNavigationProp<ParamListBase>;
 }
 
-let uuidCount: number = 0;
-
-function generateKey(): string {
-  return `push-${uuidCount++}`;
-}
-
 const ScreenWithHeader = ({navigation}: ScreenProps): React.JSX.Element => {
-  const topLevelNavigation = useContext(NavigationContext);
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Button
         testID="stack-presentation-screen-with-header-1"
         title="Push"
-        onPress={() => topLevelNavigation?.dispatch(StackActions.push('Push'))}
+        onPress={() => navigation.push('Push')}
       />
       <Button
         testID="stack-presentation-form-screen-push-modal-1"
         title="Open modal"
-        onPress={() =>
-          topLevelNavigation?.dispatch(
-            CommonActions.navigate({
-              name: 'Modal',
-              key: generateKey(),
-            }),
-          )
-        }
+        onPress={() => navigation.push('Modal')}
       />
       <Button
         testID="stack-presentation-screen-without-header-1"
         title="Push without header"
-        onPress={() =>
-          topLevelNavigation?.dispatch(StackActions.push('PushWithoutHeader'))
-        }
+        onPress={() => navigation.push('PushWithoutHeader')}
       />
       {navigation.canGoBack() && (
         <Button
           testID="stack-presentation-screen-go-back-button-1"
           title="Go back"
-          onPress={() => navigation.goBack()}
+          onPress={navigation.goBack}
         />
       )}
     </ScrollView>
@@ -80,33 +56,31 @@ const ScreenWithHeader = ({navigation}: ScreenProps): React.JSX.Element => {
 };
 
 const ScreenWithoutHeader = ({navigation}: ScreenProps): React.JSX.Element => {
-  const topLevelNavigation = useContext(NavigationContext);
-
   return (
+    // for some reason when we set paddingTop or marginTop, the bug doesn't occur
+    // during theme change (but still occurs when we background the app and come back)
     // <ScrollView contentContainerStyle={[styles.container, styles.noHeader]}>
     <ScrollView contentContainerStyle={styles.container}>
       <Button
         testID="stack-presentation-screen-with-header-2"
         title="Push"
-        onPress={() => topLevelNavigation?.dispatch(StackActions.push('Push'))}
+        onPress={() => navigation.push('Push')}
       />
       <Button
         testID="stack-presentation-form-screen-push-modal-2"
         title="Open modal"
-        onPress={() => topLevelNavigation?.dispatch(StackActions.push('Modal'))}
+        onPress={() => navigation.push('Modal')}
       />
       <Button
         testID="stack-presentation-screen-without-header-2"
         title="Push without header"
-        onPress={() =>
-          topLevelNavigation?.dispatch(StackActions.push('PushWithoutHeader'))
-        }
+        onPress={() => navigation.push('PushWithoutHeader')}
       />
       {navigation.canGoBack() && (
         <Button
           testID="stack-presentation-screen-go-back-button-2"
           title="Go back"
-          onPress={() => navigation.goBack()}
+          onPress={navigation.goBack}
         />
       )}
     </ScrollView>
@@ -123,7 +97,7 @@ const ModalScreen = ({navigation}: ModalScreenProps): React.JSX.Element => {
       <Button
         testID="stack-presentation-modal-screen-go-back-button"
         title="Go back"
-        onPress={() => navigation.goBack()}
+        onPress={navigation.goBack}
       />
     </View>
   );
@@ -154,47 +128,43 @@ const ExampleApp = (): React.JSX.Element => {
   }, [handleChange]);
 
   const theme = useColorScheme();
-  const [topLevelNavigation, setTopLevelNavigation] =
-    useState<NavigationContainerRef<any> | null>(null);
+
   return (
     <GestureHandlerRootView style={styles.flexOne}>
       <GestureDetectorProvider>
-        <NavigationContext.Provider value={topLevelNavigation}>
-          <NavigationContainer
-            ref={setTopLevelNavigation}
-            theme={theme === 'light' ? DefaultTheme : DarkTheme}>
-            <Stack.Navigator>
-              <Stack.Screen
-                name="Push"
-                component={ScreenWithHeader}
-                options={{
-                  presentation: 'card',
-                  title: `header ${counter}`,
-                }}
-              />
-              <Stack.Screen
-                name="PushWithoutHeader"
-                component={ScreenWithoutHeader}
-                options={{
-                  presentation: 'card',
-                  headerShown: false,
-                  title: 'no header',
-                }}
-              />
-              <Stack.Screen
-                key={'Modal'}
-                name="Modal"
-                component={ModalScreen}
-                options={{
-                  presentation: 'modal',
-                  orientation: 'portrait_up',
-                  title: 'modal',
-                  headerShown: false,
-                }}
-              />
-            </Stack.Navigator>
-          </NavigationContainer>
-        </NavigationContext.Provider>
+        <NavigationContainer
+          theme={theme === 'light' ? DefaultTheme : DarkTheme}>
+          <Stack.Navigator>
+            <Stack.Screen
+              name="Push"
+              component={ScreenWithHeader}
+              options={{
+                presentation: 'card',
+                title: `header ${counter}`,
+              }}
+            />
+            <Stack.Screen
+              name="PushWithoutHeader"
+              component={ScreenWithoutHeader}
+              options={{
+                presentation: 'card',
+                headerShown: false,
+                title: 'no header',
+              }}
+            />
+            <Stack.Screen
+              key={'Modal'}
+              name="Modal"
+              component={ModalScreen}
+              options={{
+                presentation: 'modal',
+                orientation: 'portrait_up',
+                title: 'modal',
+                headerShown: false,
+              }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
       </GestureDetectorProvider>
     </GestureHandlerRootView>
   );
