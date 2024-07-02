@@ -1,4 +1,4 @@
-import React, {createContext, useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -12,7 +12,6 @@ import {
   DarkTheme,
   DefaultTheme,
   NavigationContainer,
-  NavigationContainerRef,
   ParamListBase,
 } from '@react-navigation/native';
 import {
@@ -106,9 +105,6 @@ const ModalScreen = ({navigation}: ModalScreenProps): React.JSX.Element => {
 const Stack = createNativeStackNavigator();
 
 let lastState: AppStateStatus;
-
-export const NavigationContext =
-  createContext<NavigationContainerRef<any> | null>(null);
 
 const ExampleApp = (): React.JSX.Element => {
   const [counter, setCounter] = useState(0);
