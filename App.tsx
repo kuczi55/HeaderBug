@@ -30,27 +30,6 @@ import {
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {GestureDetectorProvider} from 'react-native-screens/gesture-handler';
 
-interface MainScreenProps {
-  navigation: NativeStackNavigationProp<ParamListBase>;
-}
-
-const MainScreen = ({navigation}: MainScreenProps): React.JSX.Element => {
-  const topLevelNavigation = useContext(NavigationContext);
-  return (
-    <ScrollView
-      // style={{ ...styles.container, backgroundColor: 'thistle' }}
-      testID="stack-presentation-root-scroll-view">
-      <Button
-        title="push"
-        onPress={() =>
-          topLevelNavigation?.dispatch(StackActions.push('MainPush'))
-        }
-        testID="stack-presentation-push-button"
-      />
-    </ScrollView>
-  );
-};
-
 interface ScreenProps {
   navigation: NativeStackNavigationProp<ParamListBase>;
 }
@@ -64,7 +43,7 @@ function generateKey(): string {
 const ScreenWithHeader = ({navigation}: ScreenProps): React.JSX.Element => {
   const topLevelNavigation = useContext(NavigationContext);
   return (
-    <View style={{...styles.container}}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Button
         testID="stack-presentation-screen-with-header-1"
         title="Push"
@@ -89,12 +68,14 @@ const ScreenWithHeader = ({navigation}: ScreenProps): React.JSX.Element => {
           topLevelNavigation?.dispatch(StackActions.push('PushWithoutHeader'))
         }
       />
-      <Button
-        testID="stack-presentation-screen-go-back-button-1"
-        title="Go back"
-        onPress={() => navigation.goBack()}
-      />
-    </View>
+      {navigation.canGoBack() && (
+        <Button
+          testID="stack-presentation-screen-go-back-button-1"
+          title="Go back"
+          onPress={() => navigation.goBack()}
+        />
+      )}
+    </ScrollView>
   );
 };
 
@@ -102,7 +83,8 @@ const ScreenWithoutHeader = ({navigation}: ScreenProps): React.JSX.Element => {
   const topLevelNavigation = useContext(NavigationContext);
 
   return (
-    <View style={{...styles.container}}>
+    // <ScrollView contentContainerStyle={[styles.container, styles.noHeader]}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Button
         testID="stack-presentation-screen-with-header-2"
         title="Push"
@@ -120,12 +102,14 @@ const ScreenWithoutHeader = ({navigation}: ScreenProps): React.JSX.Element => {
           topLevelNavigation?.dispatch(StackActions.push('PushWithoutHeader'))
         }
       />
-      <Button
-        testID="stack-presentation-screen-go-back-button-2"
-        title="Go back"
-        onPress={() => navigation.goBack()}
-      />
-    </View>
+      {navigation.canGoBack() && (
+        <Button
+          testID="stack-presentation-screen-go-back-button-2"
+          title="Go back"
+          onPress={() => navigation.goBack()}
+        />
+      )}
+    </ScrollView>
   );
 };
 
@@ -135,7 +119,7 @@ interface ModalScreenProps {
 
 const ModalScreen = ({navigation}: ModalScreenProps): React.JSX.Element => {
   return (
-    <View style={[styles.container]}>
+    <View style={styles.container}>
       <Button
         testID="stack-presentation-modal-screen-go-back-button"
         title="Go back"
@@ -146,42 +130,6 @@ const ModalScreen = ({navigation}: ModalScreenProps): React.JSX.Element => {
 };
 
 const Stack = createNativeStackNavigator();
-const PushStackNavigator = createNativeStackNavigator();
-
-const PushStack = () => {
-  return (
-    <PushStackNavigator.Navigator screenOptions={{presentation: 'modal'}}>
-      <PushStackNavigator.Screen
-        name="Push"
-        component={ScreenWithHeader}
-        options={{
-          presentation: 'card',
-          title: 'header',
-        }}
-      />
-      <PushStackNavigator.Screen
-        name="PushWithoutHeader"
-        component={ScreenWithoutHeader}
-        options={{
-          presentation: 'card',
-          headerShown: false,
-          title: 'no header',
-        }}
-      />
-      <Stack.Screen
-        key={'Modal'}
-        name="Modal"
-        component={ModalScreen}
-        options={{
-          presentation: 'modal',
-          orientation: 'portrait_up',
-          title: 'modal',
-          headerShown: false,
-        }}
-      />
-    </PushStackNavigator.Navigator>
-  );
-};
 
 let lastState: AppStateStatus;
 
@@ -217,16 +165,32 @@ const ExampleApp = (): React.JSX.Element => {
             theme={theme === 'light' ? DefaultTheme : DarkTheme}>
             <Stack.Navigator>
               <Stack.Screen
-                key={'Main'}
-                name="Main"
-                component={MainScreen}
-                options={{title: `Stack Presentation ${counter}`}}
+                name="Push"
+                component={ScreenWithHeader}
+                options={{
+                  presentation: 'card',
+                  title: `header ${counter}`,
+                }}
               />
               <Stack.Screen
-                key={'MainPush'}
-                name="MainPush"
-                component={PushStack}
-                options={{presentation: 'card', headerShown: false}}
+                name="PushWithoutHeader"
+                component={ScreenWithoutHeader}
+                options={{
+                  presentation: 'card',
+                  headerShown: false,
+                  title: 'no header',
+                }}
+              />
+              <Stack.Screen
+                key={'Modal'}
+                name="Modal"
+                component={ModalScreen}
+                options={{
+                  presentation: 'modal',
+                  orientation: 'portrait_up',
+                  title: 'modal',
+                  headerShown: false,
+                }}
               />
             </Stack.Navigator>
           </NavigationContainer>
@@ -237,18 +201,12 @@ const ExampleApp = (): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  label: {
-    fontSize: 15,
-    color: 'black',
-    margin: 10,
-    marginTop: 15,
-  },
-  switch: {
-    marginTop: 15,
-  },
   container: {
     flex: 1,
     paddingTop: 10,
+  },
+  noHeader: {
+    paddingTop: 50,
   },
   image: {
     flex: 1,
