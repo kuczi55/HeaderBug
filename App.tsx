@@ -1,118 +1,263 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import {
-  SafeAreaView,
   ScrollView,
-  StatusBar,
   StyleSheet,
-  Text,
   useColorScheme,
   View,
+  AppState,
+  AppStateStatus,
+  Button,
 } from 'react-native';
-
 import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  CommonActions,
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
+  NavigationContainerRef,
+  ParamListBase,
+  StackActions,
+} from '@react-navigation/native';
+import {
+  NativeStackNavigationProp,
+  createNativeStackNavigator,
+} from '@react-navigation/native-stack';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {GestureDetectorProvider} from 'react-native-screens/gesture-handler';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+interface MainScreenProps {
+  navigation: NativeStackNavigationProp<ParamListBase>;
+}
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+const MainScreen = ({navigation}: MainScreenProps): React.JSX.Element => {
+  const topLevelNavigation = useContext(NavigationContext);
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
+    <ScrollView
+      // style={{ ...styles.container, backgroundColor: 'thistle' }}
+      testID="stack-presentation-root-scroll-view">
+      <Button
+        title="push"
+        onPress={() =>
+          topLevelNavigation?.dispatch(StackActions.push('MainPush'))
+        }
+        testID="stack-presentation-push-button"
+      />
+    </ScrollView>
+  );
+};
+
+interface ScreenProps {
+  navigation: NativeStackNavigationProp<ParamListBase>;
+}
+
+let uuidCount: number = 0;
+
+function generateKey(): string {
+  return `push-${uuidCount++}`;
+}
+
+const ScreenWithHeader = ({navigation}: ScreenProps): React.JSX.Element => {
+  const topLevelNavigation = useContext(NavigationContext);
+  return (
+    <View style={{...styles.container}}>
+      <Button
+        testID="stack-presentation-screen-with-header-1"
+        title="Push"
+        onPress={() => topLevelNavigation?.dispatch(StackActions.push('Push'))}
+      />
+      <Button
+        testID="stack-presentation-form-screen-push-modal-1"
+        title="Open modal"
+        onPress={() =>
+          topLevelNavigation?.dispatch(
+            CommonActions.navigate({
+              name: 'Modal',
+              key: generateKey(),
+            }),
+          )
+        }
+      />
+      <Button
+        testID="stack-presentation-screen-without-header-1"
+        title="Push without header"
+        onPress={() =>
+          topLevelNavigation?.dispatch(StackActions.push('PushWithoutHeader'))
+        }
+      />
+      <Button
+        testID="stack-presentation-screen-go-back-button-1"
+        title="Go back"
+        onPress={() => navigation.goBack()}
+      />
     </View>
   );
-}
+};
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+const ScreenWithoutHeader = ({navigation}: ScreenProps): React.JSX.Element => {
+  const topLevelNavigation = useContext(NavigationContext);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <View style={{...styles.container}}>
+      <Button
+        testID="stack-presentation-screen-with-header-2"
+        title="Push"
+        onPress={() => topLevelNavigation?.dispatch(StackActions.push('Push'))}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      <Button
+        testID="stack-presentation-form-screen-push-modal-2"
+        title="Open modal"
+        onPress={() => topLevelNavigation?.dispatch(StackActions.push('Modal'))}
+      />
+      <Button
+        testID="stack-presentation-screen-without-header-2"
+        title="Push without header"
+        onPress={() =>
+          topLevelNavigation?.dispatch(StackActions.push('PushWithoutHeader'))
+        }
+      />
+      <Button
+        testID="stack-presentation-screen-go-back-button-2"
+        title="Go back"
+        onPress={() => navigation.goBack()}
+      />
+    </View>
   );
+};
+
+interface ModalScreenProps {
+  navigation: NativeStackNavigationProp<ParamListBase>;
 }
 
+const ModalScreen = ({navigation}: ModalScreenProps): React.JSX.Element => {
+  return (
+    <View style={[styles.container]}>
+      <Button
+        testID="stack-presentation-modal-screen-go-back-button"
+        title="Go back"
+        onPress={() => navigation.goBack()}
+      />
+    </View>
+  );
+};
+
+const Stack = createNativeStackNavigator();
+const PushStackNavigator = createNativeStackNavigator();
+
+const PushStack = () => {
+  return (
+    <PushStackNavigator.Navigator screenOptions={{presentation: 'modal'}}>
+      <PushStackNavigator.Screen
+        name="Push"
+        component={ScreenWithHeader}
+        options={{
+          presentation: 'card',
+          title: 'header',
+        }}
+      />
+      <PushStackNavigator.Screen
+        name="PushWithoutHeader"
+        component={ScreenWithoutHeader}
+        options={{
+          presentation: 'card',
+          headerShown: false,
+          title: 'no header',
+        }}
+      />
+      <Stack.Screen
+        key={'Modal'}
+        name="Modal"
+        component={ModalScreen}
+        options={{
+          presentation: 'modal',
+          orientation: 'portrait_up',
+          title: 'modal',
+          headerShown: false,
+        }}
+      />
+    </PushStackNavigator.Navigator>
+  );
+};
+
+let lastState: AppStateStatus;
+
+export const NavigationContext =
+  createContext<NavigationContainerRef<any> | null>(null);
+
+const ExampleApp = (): React.JSX.Element => {
+  const [counter, setCounter] = useState(0);
+  const handleChange = useCallback((nextState: AppStateStatus) => {
+    if (nextState === 'active' && lastState === 'background') {
+      setCounter(c => c + 1);
+    }
+    lastState = nextState;
+  }, []);
+
+  useEffect(() => {
+    const listener = AppState.addEventListener('change', handleChange);
+    handleChange(AppState.currentState);
+    return () => {
+      listener.remove();
+    };
+  }, [handleChange]);
+
+  const theme = useColorScheme();
+  const [topLevelNavigation, setTopLevelNavigation] =
+    useState<NavigationContainerRef<any> | null>(null);
+  return (
+    <GestureHandlerRootView style={styles.flexOne}>
+      <GestureDetectorProvider>
+        <NavigationContext.Provider value={topLevelNavigation}>
+          <NavigationContainer
+            ref={setTopLevelNavigation}
+            theme={theme === 'light' ? DefaultTheme : DarkTheme}>
+            <Stack.Navigator>
+              <Stack.Screen
+                key={'Main'}
+                name="Main"
+                component={MainScreen}
+                options={{title: `Stack Presentation ${counter}`}}
+              />
+              <Stack.Screen
+                key={'MainPush'}
+                name="MainPush"
+                component={PushStack}
+                options={{presentation: 'card', headerShown: false}}
+              />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </NavigationContext.Provider>
+      </GestureDetectorProvider>
+    </GestureHandlerRootView>
+  );
+};
+
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  label: {
+    fontSize: 15,
+    color: 'black',
+    margin: 10,
+    marginTop: 15,
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  switch: {
+    marginTop: 15,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  container: {
+    flex: 1,
+    paddingTop: 10,
   },
-  highlight: {
-    fontWeight: '700',
+  image: {
+    flex: 1,
+    resizeMode: 'cover',
+    justifyContent: 'center',
+  },
+  flexOne: {
+    flex: 1,
   },
 });
 
-export default App;
+export default ExampleApp;
